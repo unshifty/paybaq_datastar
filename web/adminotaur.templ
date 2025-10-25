@@ -1,0 +1,18 @@
+package web
+
+import "unshift.local/paybaq/models"
+
+templ Adminotaur(allLedgers []models.LedgerSummary) {
+
+	<div data-indicator:fetching data-init="@get('/adminotaur/ledgers')">
+		<h1>Adminotaur</h1>
+		<button class="secondary"
+				data-on:click="@post('rebuild_ledgers_table')"
+				data-indicator:fetching
+				data-attr:disabled="$fetching">
+				Rebuild ledgers table
+		</button>
+		<h2>All Ledgers <span data-show="$fetching">(loading...)</span></h2>
+		@LedgersList(allLedgers)
+	</div>
+}

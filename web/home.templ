@@ -1,0 +1,24 @@
+package web
+
+import "unshift.local/paybaq/models"
+
+templ Home(userLedgers []models.LedgerSummary) {
+<section class="welcome">
+	<h1>Welcome to Paybaq</h1>
+	<p>Track shared expenses and settle up effortlessly with friends.</p>
+</section>
+
+<section class="new-ledger">
+	<h2>Create a New Ledger</h2>
+	<form id="create-ledger-form" action="/ledgers" method="POST">
+		<label for="ledger-name">Ledger Name</label><br/>
+		<input id="ledger-name" name="name" type="text" placeholder="Trip to NYC" required />
+		<button type="submit">Create</button>
+	</form>
+</section>
+<section class="user-ledgers">
+	<h2>Your Ledgers</h2>
+	@UserLedgers(userLedgers)
+</section>
+
+}

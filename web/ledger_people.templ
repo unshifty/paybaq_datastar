@@ -1,0 +1,20 @@
+package web
+
+import (
+	"fmt"
+	"unshift.local/paybaq/models"
+)
+
+templ LedgerPeople(ledger models.Ledger) {
+
+	<section>
+		<div class="add-person">
+			<input name="name" autocomplete="on" type="text" placeholder="Add person"
+					data-bind:newPersonName>
+			<button class="secondary"
+					data-on:click={fmt.Sprintf("@post('/ledgers/%s/people')", ledger.Id)}>
+				Add
+			</button>
+		</div>
+	</section>
+}

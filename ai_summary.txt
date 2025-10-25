@@ -1,0 +1,29 @@
+I'm creating a web app for tracking shared expenses and calculating how much each person owes and to whom. 
+It is called paybaq. I'm using go and datastar and implementing a cqrs model using sqlite and event sourcing. 
+I'm using the chi router and the templ package for templating. 
+I'm using sqlite for the database. 
+
+Here is the database schema for the events:
+CREATE TABLE IF NOT EXISTS events (
+  id				INTEGER PRIMARY KEY AUTOINCREMENT,
+  entity_type		TEXT NOT NULL, -- Type of the entity which the event is related to
+  entity_id    		TEXT NOT NULL, -- Id of the entity which the event is related to
+  entity_version	INTEGER NOT NULL, -- Version of the entity, incremented on each event
+  event_type      	TEXT NOT NULL, -- Type of the event
+  event_payload   	JSON NOT NULL CHECK (json_valid(event_payload)), -- Data that defines the event
+  metadata        	JSON NOT NULL CHECK (json_valid(metadata)), -- Metadata about the event
+  created_at		TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- When the event was created
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_events_stream_version
+  ON events (entity_type, entity_id, entity_version);
+
+CREATE INDEX IF NOT EXISTS idx_events_type_id
+  ON events (entity_type, id);
+
+And the schema for ledgers which are is the primary view:
+CREATE TABLE IF NOT EXISTS ledgers (
+  ledger_id     TEXT PRIMARY KEY,
+  ledger_data   JSON NOT NULL CHECK (json_valid(ledger_data)),
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,11 @@
+package web
+
+import "unshift.local/paybaq/models"
+
+templ LedgersList(ledgers []models.LedgerSummary) {
+	<ul id="ledgers">
+		for _, ledger := range ledgers {
+			<li><a href={templ.URL("/ledgers/" + ledger.Id)}>{ledger.Name}</a></li>
+		}
+	</ul>
+}

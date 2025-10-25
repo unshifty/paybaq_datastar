@@ -1,0 +1,12 @@
+[build]
+cmd = "cmd.exe /C task build"
+bin = "tmp/paybaq.exe"
+root = "."
+tmp_dir = "tmp"
+exclude_dir = ["tmp", "vendor", "data"]
+include_ext = ["go", "html", "css", "templ"]
+exclude_regex = ["_templ.go"]
+
+[log]
+time = true
+color = "auto"

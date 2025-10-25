@@ -1,0 +1,30 @@
+version: '3'
+
+env:
+  GOOS: windows
+  GOARCH: amd64
+
+tasks:
+  templ:
+    cmds:
+      - templ generate
+    sources:
+      - '**/*.tmpl'
+      - '**/*.templ'
+    generates:
+      - '**/*_templ.go'
+    desc: Generate templates
+
+  build:
+    deps: [templ]
+    cmds:
+      - go build -o ./tmp/paybaq.exe .
+    desc: Build the application
+
+  dev:
+    cmds:
+      - air
+    desc: Run live-reload dev server
+
+
+

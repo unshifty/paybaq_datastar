@@ -1,0 +1,13 @@
+package web
+
+import "unshift.local/paybaq/models"
+
+templ UserLedgers(userLedgers []models.LedgerSummary) {
+	<div id="user-ledgers" data-init="@get('/ledgers')">
+		if len(userLedgers) == 0 {
+			<p>No ledgers yet, create one above</p>
+		} else {
+			@LedgersList(userLedgers)
+		}
+	</div>
+}
