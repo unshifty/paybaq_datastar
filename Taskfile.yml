@@ -1,7 +1,7 @@
-version: '3'
+version: "3"
 
 env:
-  GOOS: windows
+  # GOOS: windows
   GOARCH: amd64
 
 tasks:
@@ -9,10 +9,10 @@ tasks:
     cmds:
       - templ generate
     sources:
-      - '**/*.tmpl'
-      - '**/*.templ'
+      - "**/*.tmpl"
+      - "**/*.templ"
     generates:
-      - '**/*_templ.go'
+      - "**/*_templ.go"
     desc: Generate templates
 
   build:
@@ -25,6 +25,3 @@ tasks:
     cmds:
       - air
     desc: Run live-reload dev server
-
-
-

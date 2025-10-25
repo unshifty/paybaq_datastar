@@ -104,7 +104,11 @@ func main() {
 
 	r.Get("/ledgers/{id}", func(w http.ResponseWriter, r *http.Request) {
 		ledgerId := chi.URLParam(r, "id")
-		cookie, _ := r.Cookie("paybaq_id")
+		cookie, err := r.Cookie("paybaq_id")
+		if err != nil {
+			httpError(w, "Could not find paybaq_id cookie", http.StatusNotFound, err)
+			return
+		}
 		insertUserLedger(r.Context(), dataSystem, cookie.Value, ledgerId)
 		ledger, err := getLedger(r.Context(), dataSystem, ledgerId)
 		if err != nil {
@@ -154,7 +158,7 @@ func main() {
 			httpError(w, "could not create ledger", http.StatusInternalServerError, err)
 			return
 		}
-		http.Redirect(w, r, "/ledger/"+ledger.Id, http.StatusSeeOther)
+		http.Redirect(w, r, "/ledgers/"+ledger.Id, http.StatusSeeOther)
 	})
 
 	// Add person to ledger
@@ -175,7 +179,11 @@ func main() {
 
 	// Get user ledgers
 	r.Get("/ledgers", func(w http.ResponseWriter, r *http.Request) {
-		cookie, _ := r.Cookie("paybaq_id")
+		cookie, err := r.Cookie("paybaq_id")
+		if err != nil {
+			log.Printf("No paybaq_id cookie found")
+			return
+		}
 		userLedgerWatcher, err := dataSystem.UserLedgers.Watch(r.Context(), cookie.Value)
 		if err != nil {
 			httpError(w, "could not watch user ledgers", http.StatusInternalServerError, err)

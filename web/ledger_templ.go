@@ -34,7 +34,6 @@ func Ledger(ledger models.Ledger, activeView string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-
 		buttonTitles := []string{"People", "Payments", "Paybaqs"}
 		if activeView == "" {
 			activeView = "people"
