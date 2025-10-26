@@ -1,0 +1,9 @@
+package web
+
+import "unshift.local/paybaq/models"
+
+templ LedgerPerson(ledger models.Ledger, person models.Person) {
+	<div class="person">
+		<span class="name">{ person.Name }</span>
+	</div>
+}

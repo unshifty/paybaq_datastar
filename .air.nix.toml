@@ -1,5 +1,5 @@
 [build]
-cmd = "cmd.exe /C task build"
+cmd = "task build"
 bin = "tmp/paybaq.exe"
 root = "."
 tmp_dir = "tmp"

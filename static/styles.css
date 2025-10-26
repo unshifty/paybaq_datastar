@@ -3,13 +3,13 @@
 /* @import "https://unpkg.com/open-props/buttons.min.css"; */
 
 @layer utilities {
-	.m2 {
-		margin-block: var(--size-fluid-2);
-	}
+    .m2 {
+        margin-block: var(--size-fluid-2);
+    }
 }
 
 :root {
-	--gray-0: oklch(0.15 0.02 278.91);
+    --gray-0: oklch(0.15 0.02 278.91);
     --gray-1: oklch(0.18 0.02 270.52);
     --gray-2: oklch(0.21 0.02 262.12);
     --gray-3: oklch(0.23 0.02 253.73);
@@ -22,216 +22,314 @@
     --gray-10: oklch(0.75 0.01 159.5);
     --gray-11: oklch(0.85 0.01 144.02);
     --gray-12: oklch(0.94 0.01 128.53);
-	--blue-0: oklch(0.25 0.05 267.33);
-	--blue-1: oklch(0.33 0.06 261.85);
-	--blue-2: oklch(0.4 0.07 256.37);
-	--blue-3: oklch(0.48 0.07 250.88);
-	--blue-4: oklch(0.55 0.08 245.4);
-	--blue-5: oklch(0.63 0.09 239.92);
-	--blue-6: oklch(0.66 0.09 233.28);
-	--blue-7: oklch(0.7 0.08 226.63);
-	--blue-8: oklch(0.73 0.08 219.99);
-	--blue-9: oklch(0.76 0.07 213.34);
-	--blue-10: oklch(0.79 0.07 206.7);
-	--blue-11: oklch(0.83 0.06 200.05);
-	--blue-12: oklch(0.86 0.06 193.41);
-	--green-0: oklch(0.3 0.03 177.23);
-	--green-1: oklch(0.37 0.06 168.1);
-	--green-2: oklch(0.45 0.08 158.96);
-	--green-3: oklch(0.52 0.1 149.83);
-	--green-4: oklch(0.6 0.12 140.69);
-	--green-5: oklch(0.67 0.14 131.56);
-	--green-6: oklch(0.7 0.13 129.16);
-	--green-7: oklch(0.72 0.13 126.77);
-	--green-8: oklch(0.75 0.12 124.37);
-	--green-9: oklch(0.78 0.12 121.97);
-	--green-10: oklch(0.81 0.11 119.57);
-	--green-11: oklch(0.83 0.1 117.18);
-	--green-12: oklch(0.86 0.1 114.78);
-	--orange-0: oklch(0.26 0.04 8.65);
-	--orange-1: oklch(0.33 0.06 19.57);
-	--orange-2: oklch(0.41 0.07 30.48);
-	--orange-3: oklch(0.48 0.09 41.4);
-	--orange-4: oklch(0.56 0.11 52.31);
-	--orange-5: oklch(0.63 0.13 63.23);
-	--orange-6: oklch(0.66 0.12 66.24);
-	--orange-7: oklch(0.69 0.12 69.26);
-	--orange-8: oklch(0.72 0.12 72.27);
-	--orange-9: oklch(0.74 0.12 75.29);
-	--orange-10: oklch(0.77 0.11 78.3);
-	--orange-11: oklch(0.8 0.11 81.32);
-	--orange-12: oklch(0.83 0.11 84.33);
-	--gradient-linear-orange-0: linear-gradient(0deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-linear-orange-1: linear-gradient(60deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-linear-orange-2: linear-gradient(120deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-linear-orange-3: linear-gradient(180deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-linear-orange-4: linear-gradient(240deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-linear-orange-5: linear-gradient(300deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-conic-orange-0: conic-gradient(0deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-conic-orange-1: conic-gradient(60deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-conic-orange-2: conic-gradient(120deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-conic-orange-3: conic-gradient(180deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-conic-orange-4: conic-gradient(240deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --gradient-conic-orange-5: conic-gradient(300deg, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --radial-gradient-orange: radial-gradient(100% 100% at 50% 50%, var(--orange-0) 0%, var(--orange-5) 50%, var(--orange-12) 100%);
-    --radial-gradient-orange-invert: radial-gradient(100% 100% at 50% 50%, var(--orange-12) 0%, var(--orange-5) 50%, var(--orange-0) 100%);
+    --blue-0: oklch(0.25 0.05 267.33);
+    --blue-1: oklch(0.33 0.06 261.85);
+    --blue-2: oklch(0.4 0.07 256.37);
+    --blue-3: oklch(0.48 0.07 250.88);
+    --blue-4: oklch(0.55 0.08 245.4);
+    --blue-5: oklch(0.63 0.09 239.92);
+    --blue-6: oklch(0.66 0.09 233.28);
+    --blue-7: oklch(0.7 0.08 226.63);
+    --blue-8: oklch(0.73 0.08 219.99);
+    --blue-9: oklch(0.76 0.07 213.34);
+    --blue-10: oklch(0.79 0.07 206.7);
+    --blue-11: oklch(0.83 0.06 200.05);
+    --blue-12: oklch(0.86 0.06 193.41);
+    --green-0: oklch(0.3 0.03 177.23);
+    --green-1: oklch(0.37 0.06 168.1);
+    --green-2: oklch(0.45 0.08 158.96);
+    --green-3: oklch(0.52 0.1 149.83);
+    --green-4: oklch(0.6 0.12 140.69);
+    --green-5: oklch(0.67 0.14 131.56);
+    --green-6: oklch(0.7 0.13 129.16);
+    --green-7: oklch(0.72 0.13 126.77);
+    --green-8: oklch(0.75 0.12 124.37);
+    --green-9: oklch(0.78 0.12 121.97);
+    --green-10: oklch(0.81 0.11 119.57);
+    --green-11: oklch(0.83 0.1 117.18);
+    --green-12: oklch(0.86 0.1 114.78);
+    --orange-0: oklch(0.26 0.04 8.65);
+    --orange-1: oklch(0.33 0.06 19.57);
+    --orange-2: oklch(0.41 0.07 30.48);
+    --orange-3: oklch(0.48 0.09 41.4);
+    --orange-4: oklch(0.56 0.11 52.31);
+    --orange-5: oklch(0.63 0.13 63.23);
+    --orange-6: oklch(0.66 0.12 66.24);
+    --orange-7: oklch(0.69 0.12 69.26);
+    --orange-8: oklch(0.72 0.12 72.27);
+    --orange-9: oklch(0.74 0.12 75.29);
+    --orange-10: oklch(0.77 0.11 78.3);
+    --orange-11: oklch(0.8 0.11 81.32);
+    --orange-12: oklch(0.83 0.11 84.33);
+    --gradient-linear-orange-0: linear-gradient(
+        0deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-linear-orange-1: linear-gradient(
+        60deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-linear-orange-2: linear-gradient(
+        120deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-linear-orange-3: linear-gradient(
+        180deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-linear-orange-4: linear-gradient(
+        240deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-linear-orange-5: linear-gradient(
+        300deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-conic-orange-0: conic-gradient(
+        0deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-conic-orange-1: conic-gradient(
+        60deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-conic-orange-2: conic-gradient(
+        120deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-conic-orange-3: conic-gradient(
+        180deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-conic-orange-4: conic-gradient(
+        240deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --gradient-conic-orange-5: conic-gradient(
+        300deg,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --radial-gradient-orange: radial-gradient(
+        100% 100% at 50% 50%,
+        var(--orange-0) 0%,
+        var(--orange-5) 50%,
+        var(--orange-12) 100%
+    );
+    --radial-gradient-orange-invert: radial-gradient(
+        100% 100% at 50% 50%,
+        var(--orange-12) 0%,
+        var(--orange-5) 50%,
+        var(--orange-0) 100%
+    );
 
-	--primary: var(--blue-6);
-	--secondary: var(--orange-6);
-	--surface-1: var(--gray-0);
-	--text-1: var(--gray-10);
+    --primary: var(--blue-6);
+    --secondary: var(--orange-6);
+    --surface-1: var(--gray-0);
+    --text-1: var(--gray-10);
 }
 
 input {
-	border-radius: 0;
-	background-color: var(--gray-3);
-	border: var(--border-size-1) solid var(--gray-6);
-	&:focus {
-		outline: none;
-		border-color: var(--gray-8);
-	}
-	&::placeholder {
-		color: var(--gray-8);
-	}
+    border-radius: 0;
+    background-color: var(--gray-3);
+    border: var(--border-size-1) solid var(--gray-6);
+    &:focus {
+        outline: none;
+        border-color: var(--gray-8);
+    }
+    &::placeholder {
+        color: var(--gray-8);
+    }
 }
 
 body {
-	font-family: var(--font-industrial);
-	padding-inline: var(--size-fluid-5);
+    font-family: var(--font-industrial);
+    padding-inline: var(--size-fluid-5);
 }
 
 button {
-	background-color: var(--_bg-color);
-	color: var(--_text-color);
-	text-shadow: none;
-	box-shadow: none;
-	border: var(--size-1) solid var(--_border-color);
-	padding-inline: var(--size-2);
-	padding-block: var(--size-1);
+    background-color: var(--_bg-color);
+    color: var(--_text-color);
+    text-shadow: none;
+    box-shadow: none;
+    border: var(--size-1) solid var(--_border-color);
+    padding-inline: var(--size-2);
+    padding-block: var(--size-1);
 
-	&:hover {
-		background-color: var(--_hover-bg-color);
-	}
+    &:hover {
+        background-color: var(--_hover-bg-color);
+    }
 
-	&:active {
-		background-color: var(--_active-bg-color);
-		border-color: var(--_active_border-color);
-		color: var(--_active-text-color);
-	}
+    &:active {
+        background-color: var(--_active-bg-color);
+        border-color: var(--_active_border-color);
+        color: var(--_active-text-color);
+    }
 }
 
 button.primary {
-	--_bg-color: var(--blue-6);
-	--_text-color: var(--blue-1);
-	--_border-color: var(--blue-3);
-	--_hover-bg-color: var(--blue-7);
-	--_active-bg-color: var(--blue-5);
-	--_active-text-color: var(--blue-0);
-	--_active_border-color: var(--blue-2);
+    --_bg-color: var(--blue-6);
+    --_text-color: var(--blue-1);
+    --_border-color: var(--blue-3);
+    --_hover-bg-color: var(--blue-7);
+    --_active-bg-color: var(--blue-5);
+    --_active-text-color: var(--blue-0);
+    --_active_border-color: var(--blue-2);
 }
 
 button.secondary {
-	--_bg-color: var(--orange-6);
-	--_text-color: var(--orange-1);
-	--_border-color: var(--orange-3);
-	--_hover-bg-color: var(--orange-7);
-	--_active-bg-color: var(--orange-5);
-	--_active-text-color: var(--orange-0);
-	--_active_border-color: var(--orange-2);
+    --_bg-color: var(--orange-6);
+    --_text-color: var(--orange-1);
+    --_border-color: var(--orange-3);
+    --_hover-bg-color: var(--orange-7);
+    --_active-bg-color: var(--orange-5);
+    --_active-text-color: var(--orange-0);
+    --_active_border-color: var(--orange-2);
 }
 
 .ledger {
-	border: var(--border-size-1) solid var(--gray-6);
-	border-radius: var(--radius-0);
-	padding: var(--size-fluid-2);
-	/* box-shadow: var(--shadow-4); */
-	margin-block: var(--size-fluid-2);
-	max-width: 40rem;
-	margin: 0 auto;
-	
+    border: var(--border-size-1) solid var(--gray-6);
+    border-radius: var(--radius-0);
+    padding: var(--size-fluid-2);
+    box-shadow: var(--shadow-4);
+    margin-block: var(--size-fluid-2);
+    max-width: 40rem;
+    margin: 0 auto;
 
-	.ledger-header {
-		color: var(--secondary);
-	}
+    .ledger-header {
+        color: var(--secondary);
+        margin-bottom: var(--size-fluid-2);
+    }
 
+    .add-person {
+        display: flex;
+        padding-block: var(--size-fluid-2);
+        gap: var(--size-fluid-2);
 
-	.add-person {
-		display: flex;
-		padding: var(--size-fluid-2);
-		gap: var(--size-fluid-2);
+        input {
+            flex: 1;
+        }
 
-		input {
-			flex: 1;
-		}
+        button {
+            flex: 0;
+        }
+    }
 
-		button {
-			flex: 0;
-		}
-	}
+    .people {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-fluid-1);
+    }
+
+    .person {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-fluid-2);
+        border: var(--border-size-1) solid var(--gray-4);
+        border-radius: var(--radius-0);
+        padding: var(--size-fluid-2);
+        background-color: var(--gray-3);
+    }
 }
 
 .ledger-nav {
-	--_bg-color: transparent;
-	--_inactive_color: var(--gray-9);
-	--_active_color: var(--primary);
+    --_bg-color: transparent;
+    --_inactive_color: var(--gray-9);
+    --_active_color: var(--primary);
 
-	/* Tab list */
-	&>[role="tablist"] {
-		border-bottom: 1px solid var(--border-color);
+    /* Tab list */
+    & > [role="tablist"] {
+        border-bottom: 1px solid var(--border-color);
 
-		button {
-			--_ripple-color: light-dark(color-mix(in oklch, var(--gray-2) 80%, var(--gray-8)),
-					color-mix(in oklch, var(--gray-13) 80%, var(--gray-8)));
+        button {
+            --_ripple-color: light-dark(
+                color-mix(in oklch, var(--gray-2) 80%, var(--gray-8)),
+                color-mix(in oklch, var(--gray-13) 80%, var(--gray-8))
+            );
 
-			background: var(--_bg-color) var(--ripple, none);
-			color: var(--_inactive_color);
-			font-weight: 500;
-			line-height: var(--font-lineheight-4);
-			padding: var(--size-2) var(--size-3);
-			border: none;
-			outline-color: transparent;
-			outline-offset: -4px;
-			border-radius: 0;
-			box-shadow: none;
+            background: var(--_bg-color) var(--ripple, none);
+            color: var(--_inactive_color);
+            font-weight: 500;
+            line-height: var(--font-lineheight-4);
+            padding: var(--size-2) var(--size-3);
+            border: none;
+            outline-color: transparent;
+            outline-offset: -4px;
+            border-radius: 0;
+            box-shadow: none;
 
-			&:focus-visible {
-				border-radius: 0;
-			}
+            &:focus-visible {
+                border-radius: 0;
+            }
 
-			&[aria-selected="true"] {
-				border-block-end: 2px solid var(--_active_color);
-				color: var(--_active_color);
+            &[aria-selected] {
+                border-block-end: 2px solid var(--_active_color);
+                color: var(--_active_color);
 
-				&:focus-visible {
-					outline: 2px solid var(--text-color-1);
-				}
-			}
+                &:focus-visible {
+                    outline: 2px solid var(--text-color-1);
+                }
+            }
 
-			@media (prefers-reduced-motion: no-preference) {
-				transition: background-color 0.2s var(--ease-out-3),
-					border-color 0.2s var(--ease-out-3), color 0.2s var(--ease-out-3),
-					outline-offset 0.05s var(--ease-1);
+            @media (prefers-reduced-motion: no-preference) {
+                transition:
+                    background-color 0.2s var(--ease-out-3),
+                    border-color 0.2s var(--ease-out-3),
+                    color 0.2s var(--ease-out-3),
+                    outline-offset 0.05s var(--ease-1);
 
-				/*** Ripple effect */
-				background-position: center;
-				transition: background var(--button-ripple-duration);
+                /*** Ripple effect */
+                background-position: center;
+                transition: background var(--button-ripple-duration);
 
-				&:where(:not(:active):hover) {
-					--ripple: radial-gradient(circle,
-							transparent 1%,
-							var(--_ripple-color) 1%) center/15000%;
-				}
+                &:where(:not(:active):hover) {
+                    --ripple: radial-gradient(
+                            circle,
+                            transparent 1%,
+                            var(--_ripple-color) 1%
+                        )
+                        center/15000%;
+                }
 
-				&:where(:hover:active) {
-					background-size: var(--button-ripple-size);
-					transition: background 0s;
-				}
+                &:where(:hover:active) {
+                    background-size: var(--button-ripple-size);
+                    transition: background 0s;
+                }
 
-				&:hover {
-					background-color: light-dark(oklch(from var(--_active_color) calc(l * 0.75) none h / 5%),
-							oklch(from var(--_active_color) calc(l * 1.25) none h / 5%));
-				}
-			}
-		}
-	}
+                &:hover {
+                    background-color: light-dark(
+                        oklch(
+                            from var(--_active_color) calc(l * 0.75) none h / 5%
+                        ),
+                        oklch(
+                            from var(--_active_color) calc(l * 1.25) none h / 5%
+                        )
+                    );
+                }
+            }
+        }
+    }
 }

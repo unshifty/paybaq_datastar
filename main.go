@@ -115,38 +115,43 @@ func main() {
 			httpError(w, "could not get ledger", http.StatusInternalServerError, err)
 			return
 		}
-		templ.Handler(web.Layout("Paybaq", web.Ledger(ledger, ""))).ServeHTTP(w, r)
+		templ.Handler(web.Layout("Paybaq", web.Ledger(ledger))).ServeHTTP(w, r)
 	})
 
-	r.Get("/ledger-stream", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/ledgers/{ledger_id}/stream", func(w http.ResponseWriter, r *http.Request) {
+		ledgerId := chi.URLParam(r, "ledger_id")
 		signals := struct {
-			LedgerId   string `json:"ledgerId"`
 			LedgerView string `json:"ledgerView"`
 		}{
 			LedgerView: "people",
 		}
 		if err := datastar.ReadSignals(r, &signals); err != nil {
-			httpError(w, "could not read signals: %s", http.StatusInternalServerError, err)
-			return
+			log.Printf("could not read signals: %v", err)
 		}
-		if signals.LedgerId == "" {
-			httpError(w, "ledgerId signal is required", http.StatusBadRequest, nil)
-			return
+		ledgerWatcher, err := dataSystem.LedgerSnapshots.Watch(ctx, ledgerId, jetstream.UpdatesOnly())
+		if err != nil {
+			httpError(w, "could not set up watcher for ledger", http.StatusInternalServerError, err)
 		}
 		sse := datastar.NewSSE(w, r)
-		// add a signal with a unique id for this connection
-		sse.PatchSignals([]byte(fmt.Sprintf(`{"sse_id": "%s"}`)))
 		for {
 			select {
 			case <-r.Context().Done():
 				log.Println("GET /ledger-stream received context done")
 				return
-			case ledger := <-ledgerEvents:
-				if ledger.Id != signals.LedgerId {
+			case kv := <-ledgerWatcher.Updates():
+				if kv == nil {
 					continue
 				}
-				log.Printf("New event received in /ledger-stream for ledger %s, patching ledgers", ledger.Id)
-				patchLedger(sse, dataSystem, signals.LedgerId, signals.LedgerView)
+				var ledger models.Ledger
+				if err = json.Unmarshal(kv.Value(), &ledger); err != nil {
+					log.Printf("could not unmarshal ledger json, %s", kv.Value())
+					continue
+				}
+				if ledger.Id != ledgerId {
+					continue
+				}
+				log.Printf("New ledger snapshot recieved for ledger %s, patching ledger", ledger.Id)
+				patchLedger(sse, dataSystem, ledgerId)
 			}
 		}
 	})
@@ -168,7 +173,8 @@ func main() {
 			NewPersonName string `json:"newPersonName"`
 		}{}
 		if err := datastar.ReadSignals(r, &signals); err != nil {
-			log.Printf("could not read signals for adding a person: %s", err)
+			httpError(w, "could not add person to ledger", http.StatusInternalServerError, err)
+			return
 		}
 		_, err := AddPerson(r.Context(), dataSystem, ledgerId, signals.NewPersonName)
 		if err != nil {
@@ -372,14 +378,13 @@ func EnsureUserCookie(next http.Handler) http.Handler {
 	})
 }
 
-func patchLedger(sse *datastar.ServerSentEventGenerator, ds *DataSystem, ledgerId string, ledgerView string) error {
+func patchLedger(sse *datastar.ServerSentEventGenerator, ds *DataSystem, ledgerId string) error {
 	ledger, err := getLedger(sse.Context(), ds, ledgerId)
 	if err != nil {
 		log.Printf("could not get ledger: %s", err)
 		return err
 	}
-	log.Println("Patching ledger", ledgerId, "with view", ledgerView)
-	return sse.PatchElementTempl(web.Ledger(ledger, ledgerView))
+	return sse.PatchElementTempl(web.Ledger(ledger))
 }
 
 func patchAllLedgers(sse *datastar.ServerSentEventGenerator, ds *DataSystem) error {

@@ -5,47 +5,34 @@ import (
 	"unshift.local/paybaq/models"
 )
 
-templ Ledger(ledger models.Ledger, activeView string) {
-
-	{{ 
-		buttonTitles := []string{"People", "Payments", "Paybaqs"} 
-		if activeView == "" {
-			activeView = "people"
-		}
-	}}
-
-<article id={ledger.Id} class="ledger" data-init={fmt.Sprintf("@get('/ledgers/%s')", ledger.Id)}>
-	<section id="ledger-header" class="ledger-header">
-		<h2 class="m2">{ledger.Name}</h2>
-	</section>
-	<section>
-		<nav class="ledger-nav underlined">
-			<div role="tablist" aria-label="Underlined tabs">
-			for i, view := range []string{"people", "payments", "paybaqs"} {
-				<button 
-						id={"tab-" + view}
-						role="tab" 
-						tabindex={i+1} 
-						aria-controls={"tabpanel-" + view}
-						if activeView == view {
-							aria-selected="true"
-						} else {
-							aria-selected="false"
-						}
-						data-on:click={fmt.Sprintf("$ledgerView = '%s'; @get('/ledgers/%s')", view, ledger.Id)}>
-					{buttonTitles[i]}
-				</button>
-			}
-			</div>
-		</nav>
-	</section>
-	<section class="ledger-content">
-		if activeView == "people" {
+templ Ledger(ledger models.Ledger) {
+	{{ buttonTitles := []string{"People", "Payments", "Paybaqs"} }}
+	<article id={ ledger.Id } class="ledger" data-signals:ledger-view__ifmissing="'people'" data-init={ fmt.Sprintf("@get('/ledgers/%s/stream')", ledger.Id) }>
+		<section id="ledger-header" class="ledger-header">
+			<h2 class="m2">{ ledger.Name }</h2>
+		</section>
+		<section>
+			<nav class="ledger-nav underlined">
+				<div role="tablist" aria-label="Underlined tabs">
+					for i, view := range []string{"people", "payments", "paybaqs"} {
+						<button
+							id={ "tab-" + view }
+							role="tab"
+							tabindex={ i + 1 }
+							aria-controls={ "tabpanel-" + view }
+							data-attr:aria-selected={ fmt.Sprintf("$ledgerView == '%s'", view) }
+							data-on:click={ fmt.Sprintf("$ledgerView = '%s'", view) }
+						>
+							{ buttonTitles[i] }
+						</button>
+					}
+				</div>
+			</nav>
+		</section>
+		<section class="ledger-content">
 			@LedgerPeople(ledger)
-		} else {
-			<p>Not implemented</p>
-		}
-	</section>
-</article>
-
+			@LedgerPayments(ledger)
+			@LedgerPaybaqs(ledger)
+		</section>
+	</article>
 }
