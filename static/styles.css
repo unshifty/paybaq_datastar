@@ -6,6 +6,9 @@
     .m2 {
         margin-block: var(--size-fluid-2);
     }
+    .w100 {
+        width: 100%;
+    }
 }
 
 :root {
@@ -22,6 +25,19 @@
     --gray-10: oklch(0.75 0.01 159.5);
     --gray-11: oklch(0.85 0.01 144.02);
     --gray-12: oklch(0.94 0.01 128.53);
+    --purple-0: oklch(0.25 0.05 283.5);
+    --purple-1: oklch(0.31 0.07 294.24);
+    --purple-2: oklch(0.36 0.1 304.98);
+    --purple-3: oklch(0.42 0.12 315.72);
+    --purple-4: oklch(0.47 0.14 326.46);
+    --purple-5: oklch(0.53 0.16 337.2);
+    --purple-6: oklch(0.56 0.15 340.07);
+    --purple-7: oklch(0.58 0.15 342.93);
+    --purple-8: oklch(0.61 0.14 345.8);
+    --purple-9: oklch(0.64 0.14 348.66);
+    --purple-10: oklch(0.67 0.13 351.53);
+    --purple-11: oklch(0.69 0.12 354.39);
+    --purple-12: oklch(0.72 0.12 357.26);
     --blue-0: oklch(0.25 0.05 267.33);
     --blue-1: oklch(0.33 0.06 261.85);
     --blue-2: oklch(0.4 0.07 256.37);
@@ -149,7 +165,13 @@
     --primary: var(--blue-6);
     --secondary: var(--orange-6);
     --surface-1: var(--gray-0);
+    --surface-2: var(--gray-1);
+    --surface-3: var(--gray-1);
     --text-1: var(--gray-10);
+}
+
+@view-transition {
+    navigation: auto;
 }
 
 input {
@@ -210,25 +232,65 @@ button.secondary {
     --_active_border-color: var(--orange-2);
 }
 
+button.neutral {
+    --_bg-color: var(--gray-8);
+    --_text-color: var(--gray-1);
+    --_border-color: var(--gray-6);
+    --_hover-bg-color: var(--gray-9);
+    --_active-bg-color: var(--gray-7);
+    --_active-text-color: var(--gray-0);
+    --_active_border-color: var(--gray-5);
+}
+
+button.danger {
+    --_bg-color: var(--red-6);
+    --_text-color: var(--red-1);
+    --_border-color: var(--red-3);
+    --_hover-bg-color: var(--red-7);
+    --_active-bg-color: var(--red-5);
+    --_active-text-color: var(--red-0);
+    --_active_border-color: var(--red-2);
+}
+
+.user-ledgers {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-fluid-2);
+}
+
 .ledger {
-    border: var(--border-size-1) solid var(--gray-6);
+    background-color: var(--blue-0);
+    border: var(--border-size-1) solid var(--blue-1);
     border-radius: var(--radius-0);
-    padding: var(--size-fluid-2);
-    box-shadow: var(--shadow-4);
+    box-shadow: var(--shadow-5);
     margin-block: var(--size-fluid-2);
-    max-width: 40rem;
+    width: 40rem;
     margin: 0 auto;
 
     .ledger-header {
         color: var(--secondary);
+        padding: var(--size-fluid-2);
         margin-bottom: var(--size-fluid-2);
+        font-size: var(--font-size-6);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: var(--font-letterspacing-3);
+        line-height: var(--font-lineheight-4);
+    }
+
+    .people {
+        background-color: var(--gray-0);
+        display: flex;
+        flex-direction: column;
+        padding-inline: var(--size-fluid-0);
+        box-shadow: var(--shadow-2);
+        margin: var(--size-0);
     }
 
     .add-person {
         display: flex;
-        padding-block: var(--size-fluid-2);
         gap: var(--size-fluid-2);
-
+        padding: var(--size-fluid-2);
         input {
             flex: 1;
         }
@@ -238,56 +300,90 @@ button.secondary {
         }
     }
 
-    .people {
+    .people-list {
         display: flex;
         flex-direction: column;
-        gap: var(--size-fluid-1);
+        gap: var(--size-fluid-0);
     }
 
     .person {
         display: flex;
         flex-direction: column;
         gap: var(--size-fluid-2);
-        border: var(--border-size-1) solid var(--gray-4);
+        border-block-start: var(--border-size-1) solid var(--blue-1);
         border-radius: var(--radius-0);
         padding: var(--size-fluid-2);
-        background-color: var(--gray-3);
+        background-color: var(--gray-1);
+    }
+
+    .add-payment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-block: var(--size-fluid-2);
     }
 }
 
 .ledger-nav {
-    --_bg-color: transparent;
-    --_inactive_color: var(--gray-9);
-    --_active_color: var(--primary);
+    --_transparent: transparent;
+    --_bg-color: var(--blue-2);
+    --_inactive_bg: var(--_transparent);
+    --_inactive_border: var(--blue-2);
+    --_inactive_text: var(--blue-4);
+    --_active_bg: var(--_transparent);
+    --_active_border: var(--blue-9);
+    --_active_text: var(--blue-9);  
+
+    margin: var(--size-fluid-0);
+    width: 100%;
 
     /* Tab list */
     & > [role="tablist"] {
-        border-bottom: 1px solid var(--border-color);
-
+        border-bottom: var(--border-size-1) solid var(--_inactive_border);
+        display: flex;
+        gap: var(--size-0);
         button {
             --_ripple-color: light-dark(
                 color-mix(in oklch, var(--gray-2) 80%, var(--gray-8)),
                 color-mix(in oklch, var(--gray-13) 80%, var(--gray-8))
             );
 
-            background: var(--_bg-color) var(--ripple, none);
-            color: var(--_inactive_color);
-            font-weight: 500;
+            background: var(--_inactive_bg) var(--ripple, none);
+            color: var(--_inactive_text);
+            font-weight: 300;
+            font-size: var(--font-size-1);
+            text-transform: uppercase;
+            letter-spacing: var(--font-letterspacing-3);
             line-height: var(--font-lineheight-4);
-            padding: var(--size-2) var(--size-3);
-            border: none;
+            padding-block: 0;
+            padding-inline: var(--size-fluid-2);
             outline-color: transparent;
             outline-offset: -4px;
             border-radius: 0;
             box-shadow: none;
+
+            .button-text {
+                display: flex;
+                align-items: baseline;
+                justify-content: center;
+                padding-block: var(--size-fluid-1);
+                border-block: var(--size-1) solid var(--_transparent);
+                text-align: center;
+            }
 
             &:focus-visible {
                 border-radius: 0;
             }
 
             &[aria-selected] {
-                border-block-end: 2px solid var(--_active_color);
-                color: var(--_active_color);
+                background-color: var(--_active_bg);
+                /* border: var(--border-size-1) solid var(--_active_border); */
+                /* border-block-end: 2px solid var(--_active_border); */
+                color: var(--_active_text);
+
+                .button-text {
+                    border-block-end: var(--size-1) solid var(--_active_border);
+                }
 
                 &:focus-visible {
                     outline: 2px solid var(--text-color-1);
@@ -321,12 +417,8 @@ button.secondary {
 
                 &:hover {
                     background-color: light-dark(
-                        oklch(
-                            from var(--_active_color) calc(l * 0.75) none h / 5%
-                        ),
-                        oklch(
-                            from var(--_active_color) calc(l * 1.25) none h / 5%
-                        )
+                        oklch(from var(--primary) calc(l * 0.75) none h / 5%),
+                        oklch(from var(--primary) calc(l * 1.25) none h / 5%)
                     );
                 }
             }

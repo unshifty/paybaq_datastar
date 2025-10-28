@@ -18,6 +18,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/starfederation/datastar-go/datastar"
+	"github.com/valyala/bytebufferpool"
 
 	"unshift.local/paybaq/models"
 	"unshift.local/paybaq/web"
@@ -29,6 +30,11 @@ var hotReloadOnlyOnce sync.Once
 
 var ledgerEvents = make(chan models.Ledger, 10)
 
+const LEDGER_SNAPSHOTS_BUCKET = "LEDGER_SNAPSHOTS"
+const USER_LEDGERS_BUCKET = "USER_LEDGERS"
+const LEDGERS_STREAM = "LEDGERS"
+const VIEW_UPDATE_SUBJECT = "VIEW.update"
+
 type DataSystem struct {
 	NatsServer      *embeddednats.Server
 	NatsConn        *nats.Conn
@@ -36,6 +42,7 @@ type DataSystem struct {
 	LedgerStream    jetstream.Stream
 	LedgerSnapshots jetstream.KeyValue
 	UserLedgers     jetstream.KeyValue
+	SignalsMap      map[string]models.LedgerSignals
 }
 
 func main() {
@@ -65,20 +72,20 @@ func main() {
 		log.Fatal(fmt.Errorf("could not create jetstream: %w", err))
 	}
 	ledgerStream, err := js.CreateStream(ctx, jetstream.StreamConfig{
-		Name:     "LEDGERS",
-		Subjects: []string{"LEDGERS.>"},
+		Name:     LEDGERS_STREAM,
+		Subjects: []string{LEDGERS_STREAM + ".>"},
 	})
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not create LEDGERS stream: %w", err))
 	}
 	snapshotsBucket, err := js.CreateKeyValue(ctx, jetstream.KeyValueConfig{
-		Bucket: "LEDGER_SNAPSHOTS",
+		Bucket: LEDGER_SNAPSHOTS_BUCKET,
 	})
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not create ledger.snapshots key value store: %w", err))
 	}
 	userLedgersBucket, err := js.CreateKeyValue(ctx, jetstream.KeyValueConfig{
-		Bucket: "USER_LEDGERS",
+		Bucket: USER_LEDGERS_BUCKET,
 	})
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not create user.ledgers key value store: %w", err))
@@ -94,13 +101,16 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger, middleware.Recoverer, EnsureUserCookie)
+	r.Use(
+		middleware.Logger,
+		middleware.Recoverer,
+		EnsureUserCookie)
 
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	r.Get("/hotreload", HotReloadHandler)
 
-	r.Get("/", templ.Handler(web.Layout("Paybaq", web.Home([]models.LedgerSummary{}))).ServeHTTP)
+	r.Get("/", templ.Handler(web.Layout("Paybaq", web.Home([]models.Ledger{}))).ServeHTTP)
 
 	r.Get("/ledgers/{id}", func(w http.ResponseWriter, r *http.Request) {
 		ledgerId := chi.URLParam(r, "id")
@@ -120,19 +130,18 @@ func main() {
 
 	r.Get("/ledgers/{ledger_id}/stream", func(w http.ResponseWriter, r *http.Request) {
 		ledgerId := chi.URLParam(r, "ledger_id")
-		signals := struct {
-			LedgerView string `json:"ledgerView"`
-		}{
-			LedgerView: "people",
-		}
+		var signals models.LedgerSignals
 		if err := datastar.ReadSignals(r, &signals); err != nil {
 			log.Printf("could not read signals: %v", err)
 		}
+		log.Printf("Received signals: %v", signals)
 		ledgerWatcher, err := dataSystem.LedgerSnapshots.Watch(ctx, ledgerId, jetstream.UpdatesOnly())
 		if err != nil {
 			httpError(w, "could not set up watcher for ledger", http.StatusInternalServerError, err)
 		}
 		sse := datastar.NewSSE(w, r)
+		sse_id := uuid.New().String()
+		sse.PatchSignals([]byte(fmt.Sprintf("{conn_id: '%s'}", sse_id)))
 		for {
 			select {
 			case <-r.Context().Done():
@@ -154,6 +163,43 @@ func main() {
 				patchLedger(sse, dataSystem, ledgerId)
 			}
 		}
+	})
+
+	// Update ledger view
+	r.Patch("/ledgers/{ledger_id}/view", func(w http.ResponseWriter, r *http.Request) {
+		ledgerId := chi.URLParam(r, "ledger_id")
+		datastarSignals, err := GetDatastarSignals(r)
+		if err != nil {
+			httpError(w, "could not read signals", http.StatusInternalServerError, err)
+			return
+		}
+		var signals models.LedgerSignals
+		if err := json.Unmarshal(datastarSignals, &signals); err != nil {
+			httpError(w, "could not read signals", http.StatusInternalServerError, err)
+			return
+		}
+		log.Printf("Received signals: %v", signals)
+		if signals.ConnectionId == "" {
+			log.Printf("No connection id provided for %s, skipping", ledgerId)
+			return
+		}
+		if err = dataSystem.NatsConn.Publish(VIEW_UPDATE_SUBJECT, datastarSignals); err != nil {
+			log.Printf("could not publish view update for %s, %v", ledgerId, err)
+			return
+		}
+		// ledger, err := getLedger(r.Context(), dataSystem, ledgerId)
+		// if err != nil {
+		// 	httpError(w, "could not get ledger", http.StatusInternalServerError, err)
+		// 	return
+		// }
+		// ledger.LedgerView = signals.LedgerViews[ledgerId]
+		// if ledger.LedgerView == (models.LedgerView{}) {
+		// 	log.Printf("Ledger view not provided for %s, using default", ledgerId)
+		// 	ledger.LedgerView = models.LedgerView{
+		// 		Tab:  "people",
+		// 		Mode: "list",
+		// 	}
+		// }
 	})
 
 	// Create ledger
@@ -200,14 +246,44 @@ func main() {
 			httpError(w, "could not get user ledgers", http.StatusInternalServerError, err)
 			return
 		}
-		ledgerWatcher, _ := dataSystem.LedgerSnapshots.WatchFiltered(r.Context(), userLedgerIds, jetstream.UpdatesOnly())
+		ledgerWatcher, _ := dataSystem.LedgerSnapshots.WatchFiltered(r.Context(), cloneStrings(userLedgerIds), jetstream.UpdatesOnly())
 
+		// subscribe to view changes
+		viewUpdateChannel := make(chan *nats.Msg)
+		viewsSub, err := dataSystem.NatsConn.Subscribe(VIEW_UPDATE_SUBJECT, func(msg *nats.Msg) {
+			viewUpdateChannel <- msg
+		})
+		if err != nil {
+			httpError(w, "could not subscribe to view changes", http.StatusInternalServerError, err)
+			return
+		}
+		defer viewsSub.Unsubscribe()
+
+		viewSignals := models.LedgerSignals{
+			LedgerViews: make(map[string]models.LedgerView),
+		}
+
+		sse_id := uuid.New().String()
 		sse := datastar.NewSSE(w, r)
+		sse.PatchSignals([]byte(fmt.Sprintf("{conn_id: '%s'}", sse_id)))
 		for {
 			select {
 			case <-r.Context().Done():
 				log.Println("GET /ledgers received context done")
 				return
+			case msg := <-viewUpdateChannel:
+				if msg == nil {
+					continue
+				}
+				if err := json.Unmarshal(msg.Data, &viewSignals); err != nil {
+					log.Printf("could not unmarshal view signals: %v", err)
+					continue
+				}
+				if viewSignals.ConnectionId != sse_id {
+					continue
+				}
+				log.Printf("Received view change: %v", viewSignals)
+				updateLedgers(r.Context(), sse, dataSystem, userLedgerIds, &viewSignals)
 			case update := <-userLedgerWatcher.Updates():
 				if update == nil {
 					continue
@@ -215,15 +291,10 @@ func main() {
 				log.Printf("User ledgers list updated, patching user ledgers %s", update.Value())
 				ledgerIdsString := string(update.Value())
 				userLedgerIds := strings.Split(ledgerIdsString, ",")
-				userLedgers, err := getLedgerSummaries(r.Context(), dataSystem, userLedgerIds)
-				if err != nil {
-					log.Printf("could not get ledger summaries: %v", err)
-					continue
-				}
 				// reset the ledger watcher with the new list of ledger ids
 				ledgerWatcher.Stop()
-				ledgerWatcher, _ = dataSystem.LedgerSnapshots.WatchFiltered(r.Context(), userLedgerIds, jetstream.UpdatesOnly())
-				sse.PatchElementTempl(web.UserLedgers(userLedgers))
+				ledgerWatcher, _ = dataSystem.LedgerSnapshots.WatchFiltered(r.Context(), cloneStrings(userLedgerIds), jetstream.UpdatesOnly())
+				updateLedgers(r.Context(), sse, dataSystem, userLedgerIds, &viewSignals)
 			case kv := <-ledgerWatcher.Updates():
 				if kv == nil {
 					continue
@@ -237,13 +308,9 @@ func main() {
 						}
 					}
 					userLedgerIds = updatedLedgerIds
+					log.Printf("userLedgerIds set to %v", userLedgerIds)
 				}
-				userLedgers, err := getLedgerSummaries(r.Context(), dataSystem, userLedgerIds)
-				if err != nil {
-					log.Printf("could not get ledger summaries: %v", err)
-					continue
-				}
-				sse.PatchElementTempl(web.UserLedgers(userLedgers))
+				updateLedgers(r.Context(), sse, dataSystem, userLedgerIds, &viewSignals)
 			}
 		}
 	})
@@ -332,6 +399,30 @@ func main() {
 	}
 }
 
+func updateLedgers(
+	ctx context.Context,
+	sse *datastar.ServerSentEventGenerator,
+	dataSystem *DataSystem,
+	ledgerIds []string,
+	viewSignals *models.LedgerSignals) error {
+
+	log.Printf("Patching user ledgers, %v", ledgerIds)
+	ledgers, err := getLedgers(ctx, dataSystem, ledgerIds)
+	if err != nil {
+		return fmt.Errorf("could not get ledgers: %v", err)
+	}
+	for i := range ledgers {
+		ledgerView := viewSignals.LedgerViews[ledgers[i].Id]
+		if ledgerView == (models.LedgerView{}) {
+			ledgerView.Tab = "people"
+			ledgerView.Mode = "list"
+			viewSignals.LedgerViews[ledgers[i].Id] = ledgerView
+		}
+		ledgers[i].LedgerView = ledgerView
+	}
+	return sse.PatchElementTempl(web.UserLedgers(ledgers))
+}
+
 func isDatastarRequest(r *http.Request) bool {
 	return r.Header.Get("Datastar-Request") == "true"
 }
@@ -398,7 +489,8 @@ func patchAllLedgers(sse *datastar.ServerSentEventGenerator, ds *DataSystem) err
 
 func patchUserLedgers(w http.ResponseWriter, r *http.Request, ds *DataSystem) {
 	cookie, _ := r.Cookie("paybaq_id")
-	userLedgers, err := getUserLedgers(r.Context(), ds, cookie.Value)
+	ledgerIds, err := getUserLedgerIds(r.Context(), ds, cookie.Value)
+	userLedgers, err := getLedgers(r.Context(), ds, ledgerIds)
 	if err != nil {
 		httpError(w, "could not get user ledgers", http.StatusInternalServerError, err)
 		return
@@ -480,6 +572,22 @@ func getUserLedgerIds(ctx context.Context, ds *DataSystem, userCookieId string) 
 	}
 	ledgerIds := strings.Split(string(kv.Value()), ",")
 	return ledgerIds, nil
+}
+
+func getLedgers(ctx context.Context, ds *DataSystem, ledgerIds []string) ([]models.Ledger, error) {
+	var ledgers []models.Ledger
+	for _, ledgerId := range ledgerIds {
+		kv, err := ds.LedgerSnapshots.Get(ctx, ledgerId)
+		if err != nil {
+			continue
+		}
+		var ledger models.Ledger
+		if err := json.Unmarshal(kv.Value(), &ledger); err != nil {
+			return []models.Ledger{}, err
+		}
+		ledgers = append(ledgers, ledger)
+	}
+	return ledgers, nil
 }
 
 func getLedgerSummaries(ctx context.Context, ds *DataSystem, ledgerIds []string) ([]models.LedgerSummary, error) {
@@ -568,43 +676,36 @@ func CreateLedger(ctx context.Context, ds *DataSystem, name string) (models.Ledg
 	return ledger, nil
 }
 
-// func HandlePersonAdded(ctx context.Context, viewsDb *sql.Database, ledgerId string, person models.Person) (models.Ledger, error) {
-// 	var ledger models.Ledger
-// 	err := viewsDb.WriteTx(ctx, func(conn *sqlite.Conn) error {
-// 		err := sqlitex.Execute(conn,
-// 			`
-// 			SELECT ledger_data FROM ledgers WHERE ledger_id = ?
-// 			`,
-// 			&sqlitex.ExecOptions{
-// 				Args: []any{
-// 					ledgerId,
-// 				},
-// 				ResultFunc: func(stmt *sqlite.Stmt) error {
-// 					return json.Unmarshal([]byte(stmt.ColumnText(0)), &ledger)
-// 				},
-// 			})
-// 		if err != nil {
-// 			return fmt.Errorf("could not read ledger %s: %w", ledgerId, err)
-// 		}
-// 		ledger.Id = ledgerId
-// 		if ledger.People == nil {
-// 			ledger.People = make(map[int]models.Person)
-// 		}
-// 		ledger.People[person.Id] = person
-// 		ledgerData, err := json.Marshal(ledger)
-// 		if err != nil {
-// 			return fmt.Errorf("could not marshal ledger: %w", err)
-// 		}
-// 		err = sqlitex.Execute(conn,
-// 			`
-// 			UPDATE ledgers SET ledger_data = ? WHERE ledger_id = ?
-// 			`,
-// 			&sqlitex.ExecOptions{
-// 				Args: []any{
-// 					ledgerData, ledgerId,
-// 				},
-// 			})
-// 		return err
-// 	})
-// 	return ledger, err
-// }
+// ReadSignals extracts Datastar signals from
+// an HTTP request and unmarshals them into the signals target,
+// which should be a pointer to a struct.
+//
+// Expects signals in [URL.Query] for [http.MethodGet] requests.
+// Expects JSON-encoded signals in [Request.Body] for other request methods.
+func GetDatastarSignals(r *http.Request) ([]byte, error) {
+	var dsInput []byte
+
+	if r.Method == "GET" {
+		dsJSON := r.URL.Query().Get(datastar.DatastarKey)
+		if dsJSON == "" {
+			return []byte{}, nil
+		} else {
+			dsInput = []byte(dsJSON)
+		}
+	} else {
+		buf := bytebufferpool.Get()
+		defer bytebufferpool.Put(buf)
+		if _, err := buf.ReadFrom(r.Body); err != nil {
+			if err == http.ErrBodyReadAfterClose {
+				return []byte{}, fmt.Errorf("body already closed, are you sure you created the SSE ***AFTER*** the ReadSignals? %w", err)
+			}
+			return []byte{}, fmt.Errorf("failed to read body: %w", err)
+		}
+		dsInput = buf.Bytes()
+	}
+	return dsInput, nil
+}
+
+func cloneStrings(src []string) []string {
+	return append([]string(nil), src...)
+}

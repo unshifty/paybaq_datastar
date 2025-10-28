@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "unshift.local/paybaq/models"
 
-func Home(userLedgers []models.LedgerSummary) templ.Component {
+func Home(userLedgers []models.Ledger) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,7 +31,7 @@ func Home(userLedgers []models.LedgerSummary) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"welcome\"><h1>Welcome to Paybaq</h1><p>Track shared expenses and settle up effortlessly with friends.</p></section><section class=\"new-ledger\"><h2>Create a New Ledger</h2><form id=\"create-ledger-form\" action=\"/ledgers\" method=\"POST\"><label for=\"ledger-name\">Ledger Name</label><br><input id=\"ledger-name\" name=\"name\" type=\"text\" placeholder=\"Trip to NYC\" required> <button type=\"submit\">Create</button></form></section><section class=\"user-ledgers\"><h2>Your Ledgers</h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"welcome\"><h1>Welcome to Paybaq</h1><p>Track shared expenses and settle up effortlessly with friends.</p></section><section class=\"new-ledger\"><h2>Create a New Ledger</h2><form id=\"create-ledger-form\" action=\"/ledgers\" method=\"POST\"><label for=\"ledger-name\">Ledger Name</label><br><input id=\"ledger-name\" name=\"name\" type=\"text\" placeholder=\"Trip to NYC\" required> <button class=\"secondary\" type=\"submit\">Create</button></form></section><section class=\"user-ledgers\"><h2>Your Ledgers</h2>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

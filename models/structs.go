@@ -51,16 +51,28 @@ type Paybaq struct {
 }
 
 type Ledger struct {
-	Id       string         `json:"id"`
-	SchemaId string         `json:"schema_id"`
-	Revision uint64         `json:"-"`
-	Name     string         `json:"name"`
-	People   map[int]Person `json:"people"`
-	Payments []Payment      `json:"payments"`
-	Paybaqs  []Paybaq       `json:"paybaqs"`
+	Id         string         `json:"id"`
+	SchemaId   string         `json:"schema_id"`
+	Revision   uint64         `json:"-"`
+	Name       string         `json:"name"`
+	People     map[int]Person `json:"people"`
+	Payments   []Payment      `json:"payments"`
+	Paybaqs    []Paybaq       `json:"paybaqs"`
+	LedgerView LedgerView     `json:"-"`
 }
 
 type LedgerSummary struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type LedgerView struct {
+	Tab  string `json:"tab"`
+	Mode string `json:"mode"`
+}
+
+type LedgerSignals struct {
+	LedgerViews   map[string]LedgerView `json:"ledgerViews"`
+	NewPersonName string                `json:"newpersonname"`
+	ConnectionId  string                `json:"conn_id"`
 }

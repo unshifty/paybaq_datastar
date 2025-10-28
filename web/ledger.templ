@@ -7,11 +7,15 @@ import (
 
 templ Ledger(ledger models.Ledger) {
 	{{ buttonTitles := []string{"People", "Payments", "Paybaqs"} }}
-	<article id={ ledger.Id } class="ledger" data-signals:ledger-view__ifmissing="'people'" data-init={ fmt.Sprintf("@get('/ledgers/%s/stream')", ledger.Id) }>
+	<article 
+		id={ ledger.Id } 
+		class="ledger" 
+		data-signals__ifmissing={fmt.Sprintf("{'ledgerViews': {'%s': {'tab': 'people', 'mode': 'list'}}}", ledger.Id)}
+	>
 		<section id="ledger-header" class="ledger-header">
-			<h2 class="m2">{ ledger.Name }</h2>
+			<p class="m2">{ ledger.Name }</p>
 		</section>
-		<section>
+		<section class="w100">
 			<nav class="ledger-nav underlined">
 				<div role="tablist" aria-label="Underlined tabs">
 					for i, view := range []string{"people", "payments", "paybaqs"} {
@@ -20,10 +24,10 @@ templ Ledger(ledger models.Ledger) {
 							role="tab"
 							tabindex={ i + 1 }
 							aria-controls={ "tabpanel-" + view }
-							data-attr:aria-selected={ fmt.Sprintf("$ledgerView == '%s'", view) }
-							data-on:click={ fmt.Sprintf("$ledgerView = '%s'", view) }
+							data-attr:aria-selected={ ledger.LedgerView.Tab == view }
+							data-on:click={ fmt.Sprintf("$ledgerViews.%s.tab = '%s'; @patch('/ledgers/%s/view')", ledger.Id, view, ledger.Id) }
 						>
-							{ buttonTitles[i] }
+							<div class="button-text">{ buttonTitles[i] }</div>
 						</button>
 					}
 				</div>

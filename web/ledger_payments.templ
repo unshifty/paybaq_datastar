@@ -1,9 +1,59 @@
 package web
 
+import "fmt"
 import "unshift.local/paybaq/models"
 
 templ LedgerPayments(ledger models.Ledger) {
-	<section data-show="$ledgerView == 'payments'">
-		Not implemented
+	<section data-show={fmt.Sprintf("$ledgerViews.%s.tab == 'payments'", ledger.Id)} style="display: none">
+		if ledger.LedgerView.Mode == "add" {
+			<label>
+				<p>Description</p>
+				<input type="text" placeholder="Description">
+			</label>
+			<label>
+				<p>Amount</p>
+				<input type="number" placeholder="Amount">
+			</label>
+			<label>
+			<p>Paid By</p>
+				<select>
+					<option value="">Select a person</option>
+					for _, person := range ledger.People {
+						<option value={person.Id}>{person.Name}</option>
+					}
+				</select>
+			</label>
+			<div>
+				for _, person := range ledger.People {
+					<label>
+						<input type="checkbox" value={person.Id}>
+						<span>{person.Name}</span>
+					</label>
+				}
+			</div>
+			<div>
+				<button
+					class="secondary"
+				>
+					Add Payment
+				</button>
+				<button
+					class="neutral"
+					data-on:click={fmt.Sprintf("$ledgerViews.%s.mode = 'list'; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id)}
+				>
+					Cancel
+				</button>
+			</div>
+		}
+		else {
+			<div class="add-payment">
+				<button 
+					class="secondary" 
+					data-on:click={fmt.Sprintf("$ledgerViews.%s.mode = 'add'; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id)}
+				>
+					Add Payment
+				</button>
+			</div>	
+		}
 	</section>
 }

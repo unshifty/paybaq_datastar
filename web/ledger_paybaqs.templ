@@ -1,9 +1,10 @@
 package web
 
+import "fmt"
 import "unshift.local/paybaq/models"
 
 templ LedgerPaybaqs(ledger models.Ledger) {
-	<section data-show="$ledgerView == 'paybaqs'">
+	<section data-show={fmt.Sprintf("$ledgerViews.%s.tab == 'paybaqs'", ledger.Id)} style="display: none">
 		Not implemented
 	</section>
 }
