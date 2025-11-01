@@ -25,7 +25,7 @@ templ LedgerPeople(ledger models.Ledger) {
 				</button>
 			</div>
 			<div class="people-list">
-				for _, person := range ledger.People {
+				for _, person := range ledger.PeopleSortedByName() {
 					@LedgerPerson(ledger, person)
 				}
 			</div>

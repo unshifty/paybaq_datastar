@@ -1,14 +1,16 @@
 package models
 
 import (
+	"cmp"
 	"encoding/json"
+	"slices"
 	"time"
 )
 
-type EntityType string
+type SubjectType string
 
 const (
-	EntityTypeLedger EntityType = "ledger"
+	SubjectTypeLedger SubjectType = "ledger"
 )
 
 type EventType string
@@ -22,14 +24,14 @@ const (
 )
 
 type Event struct {
-	Id            int64           `db:"id"`
-	EntityType    EntityType      `db:"entity_type"`
-	EntityId      string          `db:"entity_id"`
-	EntityVersion int64           `db:"entity_version"`
-	EventType     EventType       `db:"event_type"`
-	EventPayload  json.RawMessage `db:"event_payload"`
-	Metadata      json.RawMessage `db:"metadata"`
-	CreatedAt     time.Time       `db:"created_at"`
+	Id              int             `db:"id"`
+	SubjectType     SubjectType     `db:"subject_type"`
+	SubjectId       string          `db:"subject_id"`
+	SubjectRevision int             `db:"subject_revision"`
+	EventType       EventType       `db:"event_type"`
+	EventPayload    json.RawMessage `db:"event_payload"`
+	Metadata        json.RawMessage `db:"metadata"`
+	CreatedAt       time.Time       `db:"created_at"`
 }
 
 type Person struct {
@@ -53,7 +55,9 @@ type Paybaq struct {
 type Ledger struct {
 	Id         string         `json:"id"`
 	SchemaId   string         `json:"schema_id"`
-	Revision   uint64         `json:"-"`
+	CreatedAt  time.Time      `json:"-"`
+	UpdatedAt  time.Time      `json:"-"`
+	Revision   int            `json:"revision"`
 	Name       string         `json:"name"`
 	People     map[int]Person `json:"people"`
 	Payments   []Payment      `json:"payments"`
@@ -62,8 +66,10 @@ type Ledger struct {
 }
 
 type LedgerSummary struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type LedgerView struct {
@@ -75,4 +81,21 @@ type LedgerSignals struct {
 	LedgerViews   map[string]LedgerView `json:"ledgerViews"`
 	NewPersonName string                `json:"newpersonname"`
 	ConnectionId  string                `json:"conn_id"`
+}
+
+type UserLedger struct {
+	UserId   string `json:"user_id"`
+	LedgerId string `json:"ledger_id"`
+	Archived int    `json:"archived"`
+}
+
+func (ledger *Ledger) PeopleSortedByName() []Person {
+	people := make([]Person, 0, len(ledger.People))
+	for _, person := range ledger.People {
+		people = append(people, person)
+	}
+	slices.SortFunc(people, func(a Person, b Person) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
+	return people
 }

@@ -64,7 +64,7 @@ func LedgerPeople(ledger models.Ledger) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, person := range ledger.People {
+		for _, person := range ledger.PeopleSortedByName() {
 			templ_7745c5c3_Err = LedgerPerson(ledger, person).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

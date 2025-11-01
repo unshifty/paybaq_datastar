@@ -10,6 +10,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/nats-io/nats.go v1.43.0
 	github.com/starfederation/datastar-go v1.0.3
+	github.com/valyala/bytebufferpool v1.0.0
+	google.golang.org/protobuf v1.36.6
 	zombiezen.com/go/sqlite v1.4.2
 )
 
@@ -28,7 +30,6 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/sys v0.36.0 // indirect

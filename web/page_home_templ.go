@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "unshift.local/paybaq/models"
 
-func Adminotaur(allLedgers []models.LedgerSummary) templ.Component {
+func PageHome(userLedgers []models.Ledger) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,15 +31,15 @@ func Adminotaur(allLedgers []models.LedgerSummary) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div data-indicator:fetching data-init=\"@get('/adminotaur/ledgers')\"><h1>Adminotaur</h1><button class=\"secondary\" data-on:click=\"@post('rebuild_ledgers_table')\" data-indicator:fetching data-attr:disabled=\"$fetching\">Rebuild ledgers table</button><h2>All Ledgers <span data-show=\"$fetching\">(loading...)</span></h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"welcome\"><h1>Welcome to Paybaq</h1><p>Track shared expenses and settle up effortlessly with friends.</p></section><section class=\"new-ledger\"><h2>Create a New Ledger</h2><form id=\"create-ledger-form\" action=\"/ledgers\" method=\"POST\"><label for=\"ledger-name\">Ledger Name</label><br><input id=\"ledger-name\" name=\"name\" type=\"text\" placeholder=\"Trip to NYC\" required> <button class=\"secondary\" type=\"submit\">Create</button></form></section><section class=\"user-ledgers\"><h2>Your Ledgers</h2>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = LedgersList(allLedgers).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = UserLedgers(userLedgers).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

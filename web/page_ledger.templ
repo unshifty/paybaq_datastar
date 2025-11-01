@@ -1,0 +1,12 @@
+package web
+
+import (
+	"fmt"
+	"unshift.local/paybaq/models"
+)
+
+templ PageLedger(ledger models.Ledger) {
+	<div data-init={fmt.Sprintf("@get('/ledgers/%s/stream')", ledger.Id)}>
+		@Ledger(ledger)
+	</div>
+}
