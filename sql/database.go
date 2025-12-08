@@ -22,6 +22,9 @@ import (
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
+//go:embed migrations/main/*.sql
+var MigrationsFS embed.FS
+
 type Database struct {
 	filename   string
 	migrations []string
@@ -30,59 +33,6 @@ type Database struct {
 }
 
 type TxFn func(tx *sqlite.Conn) error
-
-type DbConn interface {
-	Read(ctx context.Context, fn TxFn) error
-	Write(ctx context.Context, fn TxFn) error
-}
-
-// Tx version calls WriteTx/ReadTx
-// Non-tx version calls WriteWithoutTx/ReadWithoutTx
-// Existing connection version passes connection to fn
-
-type DbConnTx struct {
-	Database *Database
-}
-
-func (c *DbConnTx) Read(ctx context.Context, fn TxFn) error {
-	return c.Database.ReadTx(ctx, fn)
-}
-
-func (c *DbConnTx) Write(ctx context.Context, fn TxFn) error {
-	return c.Database.WriteTx(ctx, fn)
-}
-
-func (db *Database) Read(ctx context.Context, fn TxFn) error {
-	return db.ReadTx(ctx, fn)
-}
-
-func (db *Database) Write(ctx context.Context, fn TxFn) error {
-	return db.WriteTx(ctx, fn)
-}
-
-type DbConnWithoutTx struct {
-	Database *Database
-}
-
-func (c *DbConnWithoutTx) Read(ctx context.Context, fn TxFn) error {
-	return c.Database.ReadWithoutTx(ctx, fn)
-}
-
-func (c *DbConnWithoutTx) Write(ctx context.Context, fn TxFn) error {
-	return c.Database.WriteWithoutTx(ctx, fn)
-}
-
-type DbConnWrapper struct {
-	Conn *sqlite.Conn
-}
-
-func (c *DbConnWrapper) Read(ctx context.Context, fn TxFn) error {
-	return fn(c.Conn)
-}
-
-func (c *DbConnWrapper) Write(ctx context.Context, fn TxFn) error {
-	return fn(c.Conn)
-}
 
 func NewDatabase(ctx context.Context, dbFilename string, migrations []string) (*Database, error) {
 	if dbFilename == "" {
@@ -243,6 +193,10 @@ func (db *Database) ReadTx(ctx context.Context, fn TxFn) error {
 	}
 
 	return nil
+}
+
+func Migrations() ([]string, error) {
+	return MigrationsFromFS(MigrationsFS, "migrations/main")
 }
 
 func MigrationsFromFS(migrationsFS embed.FS, migrationsDir string) ([]string, error) {

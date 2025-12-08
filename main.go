@@ -1,5 +1,7 @@
 package main
 
+import "unshift.local/paybaq/web"
+
 func main() {
-	StartServer()
+	web.StartServer()
 }

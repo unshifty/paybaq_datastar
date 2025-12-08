@@ -4,7 +4,11 @@ import "fmt"
 import "unshift.local/paybaq/models"
 
 templ LedgerPaybaqs(ledger models.Ledger) {
-	<section data-show={fmt.Sprintf("$ledgerViews.%s.tab == 'paybaqs'", ledger.Id)} style="display: none">
-		Not implemented
+	<section>
+		for _, paybaq := range ledger.Paybaqs {
+			<div>
+				{ ledger.People[paybaq.From].NameOrPlaceholder() } owes { ledger.People[paybaq.To].NameOrPlaceholder() } { fmt.Sprintf("$%.2f", paybaq.Amount) }
+			</div>
+		}
 	</section>
 }

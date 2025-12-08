@@ -31,7 +31,7 @@ func PageHome(userLedgers []models.Ledger) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"welcome\"><h1>Welcome to Paybaq</h1><p>Track shared expenses and settle up effortlessly with friends.</p></section><section class=\"new-ledger\"><h2>Create a New Ledger</h2><form id=\"create-ledger-form\" action=\"/ledgers\" method=\"POST\"><label for=\"ledger-name\">Ledger Name</label><br><input id=\"ledger-name\" name=\"name\" type=\"text\" placeholder=\"Trip to NYC\" required> <button class=\"secondary\" type=\"submit\">Create</button></form></section><section class=\"user-ledgers\"><h2>Your Ledgers</h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"\"><h1 class=\"uppercase\">WELCOME TO PAYBAQ</h1><p>Track shared expenses and settle up effortlessly with friends.</p></section><section class=\"new-ledger\"><h2 class=\"uppercase\">Create a New Ledger</h2><form id=\"create-ledger-form\" action=\"/ledgers\" method=\"POST\"><label for=\"ledger-name\"><p>Ledger Name</p><input id=\"ledger-name\" name=\"name\" type=\"text\" placeholder=\"Trip to NYC\" required></label> <button class=\"btn btn-neutral\" type=\"submit\">CREATE</button></form></section><section class=\"flex flex-col items-center\"><h2 class=\"text-lg font-semibold uppercase\">Your Ledgers</h2><div class=\"mx-auto w-full max-w-2xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +39,7 @@ func PageHome(userLedgers []models.Ledger) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

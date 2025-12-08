@@ -6,7 +6,7 @@ import (
 )
 
 templ PageLedger(ledger models.Ledger) {
-	<div data-init={fmt.Sprintf("@get('/ledgers/%s/stream')", ledger.Id)}>
+	<div class="sm:p-4 md:p-8 " data-init={ fmt.Sprintf("@get('/ledgers/%s/stream')", ledger.Id) }>
 		@Ledger(ledger)
 	</div>
 }

@@ -1,42 +1,59 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"unshift.local/paybaq/models"
 )
 
+func defaultLedgerViewString() string {
+	view := models.LedgerView{
+		View:             "people",
+		EditingPersonId:  -1,
+		EditingPaymentId: -1,
+	}
+	viewJson, _ := json.Marshal(view)
+	return string(viewJson)
+}
+
 templ Ledger(ledger models.Ledger) {
 	{{ buttonTitles := []string{"People", "Payments", "Paybaqs"} }}
-	<article 
-		id={ ledger.Id } 
-		class="ledger" 
-		data-signals__ifmissing={fmt.Sprintf("{'ledgerViews': {'%s': {'tab': 'people', 'mode': 'list'}}}", ledger.Id)}
+	<article
+		id={ ledger.Id }
+		class="card bg-base-100 card-border border-base-300 max-w-2xl mx-auto"
+		data-signals__ifmissing={ fmt.Sprintf("{'ledgerViews': {'%s': %s}}", ledger.Id, defaultLedgerViewString()) }
 	>
-		<section id="ledger-header" class="ledger-header">
-			<p class="m2">{ ledger.Name }</p>
-		</section>
-		<section class="w100">
-			<nav class="ledger-nav underlined">
-				<div role="tablist" aria-label="Underlined tabs">
-					for i, view := range []string{"people", "payments", "paybaqs"} {
-						<button
-							id={ "tab-" + view }
-							role="tab"
-							tabindex={ i + 1 }
-							aria-controls={ "tabpanel-" + view }
-							data-attr:aria-selected={ ledger.LedgerView.Tab == view }
-							data-on:click={ fmt.Sprintf("$ledgerViews.%s.tab = '%s'; @patch('/ledgers/%s/view')", ledger.Id, view, ledger.Id) }
-						>
-							<div class="button-text">{ buttonTitles[i] }</div>
-						</button>
-					}
-				</div>
-			</nav>
-		</section>
-		<section class="ledger-content">
-			@LedgerPeople(ledger)
-			@LedgerPayments(ledger)
-			@LedgerPaybaqs(ledger)
+		<div>
+			<h1 class="px-4 py-6 font-bold tracking-widest text-center">
+				{ ledger.Name }
+			</h1>
+			<section>
+				<nav class="px-2">
+					<div class="tabs tabs-box grid grid-cols-2 rounded-sm">
+						for i, view := range []string{"people", "payments"} {
+							<input
+								type="radio"
+								name={ fmt.Sprintf("nav_tabs_%s", ledger.Id) }
+								class="tab sm:px-3 md:px-6 uppercase tracking-widest"
+								aria-label={ buttonTitles[i] }
+								aria-selected?={ ledger.LedgerView.View == view }
+								checked?={ ledger.LedgerView.View == view }
+								data-on:click={ fmt.Sprintf("$ledgerViews.%s.view = '%s'; @patch('/ledgers/%s/view')", ledger.Id, view, ledger.Id) }
+							/>
+						}
+					</div>
+				</nav>
+			</section>
+		</div>
+		<section class="bg-base-200 m-2 rounded-sm">
+			switch ledger.LedgerView.View {
+				case "people":
+					@LedgerPeople(ledger)
+				case "payments":
+					@LedgerPayments(ledger)
+				case "paybaqs":
+					@LedgerPaybaqs(ledger)
+			}
 		</section>
 	</article>
 }

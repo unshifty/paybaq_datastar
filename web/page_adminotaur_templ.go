@@ -31,7 +31,7 @@ func PageAdminotaur(allLedgers []models.LedgerSummary) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div data-indicator:fetching data-init=\"@get('/adminotaur/ledgers')\"><h1>Adminotaur</h1><button class=\"secondary\" data-on:click=\"@post('reset_database')\" data-indicator:fetching data-attr:disabled=\"$fetching\">Reset database</button> <button class=\"secondary\" data-on:click=\"@post('rebuild_ledgers_table')\" data-indicator:fetching data-attr:disabled=\"$fetching\">Rebuild ledgers table</button><h2>All Ledgers <span data-show=\"$fetching\">(loading...)</span></h2>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-1 sm:p-4\" data-indicator:fetching data-init=\"@get('/adminotaur/ledgers')\"><h1 class=\"text-xl font-bold uppercase text-widest\">Adminotaur</h1><div class=\"flex gap-2 pt-2\"><button class=\"btn btn-secondary\" data-on:click=\"@post('reset_database')\" data-indicator:fetching data-attr:disabled=\"$fetching\">Reset database</button> <button class=\"btn btn-secondary\" data-on:click=\"@post('rebuild_ledgers_table')\" data-indicator:fetching data-attr:disabled=\"$fetching\">Rebuild ledgers table</button></div><h2 class=\"mt-5 text-xl font-semibold uppercase text-widest\">All Ledgers <span data-show=\"$fetching\">(loading...)</span></h2><div class=\"pl-3 pt-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +39,7 @@ func PageAdminotaur(allLedgers []models.LedgerSummary) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

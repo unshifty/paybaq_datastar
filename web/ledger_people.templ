@@ -2,33 +2,248 @@ package web
 
 import (
 	"fmt"
+	"log"
+	"slices"
 	"unshift.local/paybaq/models"
 )
 
+func addOnEnter(ledger models.Ledger) string {
+	signal := fmt.Sprintf("$ledgerViews.%s.new_person_name", ledger.Id)
+	action := fmt.Sprintf("@post('/ledgers/%s/people')", ledger.Id)
+	return fmt.Sprintf("evt.key === 'Enter' && %s.trim() && %s && (%s = '')", signal, action, signal)
+}
+
 templ LedgerPeople(ledger models.Ledger) {
-	<div data-show={fmt.Sprintf("$ledgerViews.%s.tab == 'people'", ledger.Id)} style="display: none">
-		<section class="people">
-			<div class="add-person">
+	<div data-show={ fmt.Sprintf("$ledgerViews.%s.view == 'people'", ledger.Id) } style="display: none">
+		<section>
+			<div class={ "flex gap-2 p-3", templ.KV("disabled", ledger.LedgerView.EditingPersonId > 0) }>
 				<input
+					class="input flex-1"
 					name="name"
 					autocomplete="on"
 					type="text"
 					placeholder="Add person"
-					data-bind:newPersonName
+					disabled?={ ledger.LedgerView.EditingPersonId > 0 }
+					data-bind={ fmt.Sprintf("ledgerViews.%s.new_person_name", ledger.Id) }
+					data-on:keydown={ addOnEnter(ledger) }
 				/>
 				<button
-					class="secondary"
+					class="btn btn-primary uppercase tracking-wide"
 					type="submit"
+					disabled?={ ledger.LedgerView.EditingPersonId > 0 }
 					data-on:click={ fmt.Sprintf("@post('/ledgers/%s/people')", ledger.Id) }
 				>
 					Add
 				</button>
 			</div>
-			<div class="people-list">
-				for _, person := range ledger.PeopleSortedByName() {
-					@LedgerPerson(ledger, person)
-				}
-			</div>
+			if len(ledger.People) == 0 {
+				<p class="p-4 m-1 mt-0 border-2 border-dashed border-base-100 rounded-sm">No people yet</p>
+			} else {
+				<div class="flex flex-col gap-1 p-1">
+					for _, person := range ledger.PeopleSortedByName() {
+						@LedgerPerson(ledger, person)
+					}
+				</div>
+			}
 		</section>
 	</div>
+}
+
+templ LedgerPerson(ledger models.Ledger, person models.Person) {
+	if ledger.LedgerView.EditingPersonId == person.Id {
+		<div class="bg-base-100 border border-neutral p-4 rounded-sm">
+			@PersonForm(ledger, person.Id)
+		</div>
+	} else {
+		<div class={ "bg-base-100 border border-base-300 p-4 rounded-sm", templ.KV("opacity-50", ledger.LedgerView.EditingPersonId > 0) }>
+			if ledger.LedgerView.EditingPersonId > 0 {
+				<button disabled>
+					{ person.NameOrPlaceholder() }
+				</button>
+			} else {
+				{{ paybaqsOwed := getPaybaqsOwed(ledger, person.Id) }}
+				<div class="flex items-center justify-between">
+					<button
+						class="link font-semibold tracking-wider"
+						disabled?={ ledger.LedgerView.EditingPersonId > 0 }
+						data-on:click={ fmt.Sprintf("$ledgerViews.%s.editing_person_id = %d; @patch('/ledgers/%s/view')", ledger.Id, person.Id, ledger.Id) }
+					>
+						{ person.NameOrPlaceholder() }
+					</button>
+					<div>
+						if person.Balance > 0 {
+							<span class="badge badge-neutral">{ fmt.Sprintf("Owed $%.2f", person.Balance) }</span>
+						} else if person.Balance < 0 {
+							// <span class="badge badge-secondary badge-soft">{ fmt.Sprintf("Owes $%.2f", math.Abs(person.Balance)) }</span>
+						} else {
+							<span class="badge badge-success badge-soft">All Square</span>
+						}
+					</div>
+				</div>
+				if len(paybaqsOwed) > 0 {
+					<table class="border-collapse w-full font-mono">
+						<tbody>
+							for _, paybaq := range paybaqsOwed {
+								<tr>
+									<td class="pt-4 whitespace-nowrap w-full">
+										<div class="flex items-baseline gap-2">
+											<span class="opacity-70">owes</span>
+											<span class="relative z-10">{ ledger.GetPersonById(paybaq.To).NameOrPlaceholder() }</span>
+											<span class="flex-1 border-b-2 border-neutral border-dotted"></span>
+										</div>
+									</td>
+									<td class="pt-4 px-2 whitespace-nowrap">$</td>
+									<td class="pt-4 text-right">{ paybaq.Amount }</td>
+									<td class="pt-4">
+										<button
+											class="btn btn-square btn-secondary tracking-widest uppercase leading-none  ml-3 btn-sm"
+											data-on:click={ fmt.Sprintf("@post('/ledgers/%s/paybaqs/%d/%d')", ledger.Id, paybaq.From, paybaq.To) }
+										>
+											@IconRepay()
+										</button>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			}
+		</div>
+	}
+}
+
+templ PersonForm(ledger models.Ledger, personId int) {
+	{{ person := ledger.People[personId] }}
+	if deleteRequested(ledger, personId) {
+		{{ paymentMemberships := getPaymentMemberships(ledger, personId) }}
+		<div class="flex flex-col">
+			<h2 class="self-center tracking-widest mb-3 font-semibold">Delete { person.NameOrPlaceholder() }?</h2>
+			if len(paymentMemberships) > 0 {
+				<p class="mt-3">{ person.NameOrPlaceholder() } will be removed from these expenses:</p>
+				<ul class="my-3 flex flex-col gap-4">
+					for _, payment := range paymentMemberships {
+						<li class="flex flex-col border-l-2 border-neutral pl-2">
+							<div class="text-xl">{ payment.Description }</div>
+							<div class="flex items-center gap-2">
+								if payment.PaidBy == personId {
+									<div class="uppercase tracking-wider badge badge-xs badge-outline badge-error">Paid</div>
+								}
+								if slices.Contains(payment.PaidFor, personId) {
+									<div class="uppercase tracking-wider badge badge-xs badge-outline badge-warning">Shared</div>
+								}
+							</div>
+						</li>
+					}
+				</ul>
+			} else {
+				<p>{ person.NameOrPlaceholder() } is safe to delete, they are not included in any expenses.</p>
+			}
+			<div class="flex mt-6 gap-3">
+				<button
+					class="btn btn-error"
+					data-on:click={ fmt.Sprintf("$ledgerViews.%[1]s.editing_person_id = -1; @delete('/ledgers/%[1]s/people/%[2]d'); $ledgerViews.%[1]s.editing_person = null;", ledger.Id, personId) }
+				>
+					Delete
+				</button>
+				<button
+					class="btn btn-neutral"
+					data-on:click={ fmt.Sprintf("$ledgerViews.%[1]s.editing_person_id = -1; $ledgerViews.%[1]s.editing_person = null; @patch('/ledgers/%[1]s/view')", ledger.Id) }
+				>
+					Cancel
+				</button>
+			</div>
+		</div>
+	} else {
+		<div class="grid grid-cols-4 gap-x-3 gap-y-6 items-center max-w-xs mx-auto" data-ignore-morph>
+			<h2 class="col-span-full text-center tracking-wide">Update { person.NameOrPlaceholder() }</h2>
+			<label class="floating-label col-span-full w-full sm:w-auto ">
+				<span class="">Name</span>
+				<input
+					class="input"
+					name="name"
+					type="text"
+					placeholder="Name"
+					value={ person.Name }
+					data-bind={ fmt.Sprintf("ledgerViews.%s.editing_person.name", ledger.Id) }
+				/>
+			</label>
+			<div class="col-span-full flex justify-between items-center mt-2">
+				<div class="flex gap-2">
+					<button
+						class="btn btn-primary"
+						data-on:click={ fmt.Sprintf("$ledgerViews.%[1]s.editing_person_id = -1; @patch('/ledgers/%[1]s/people/%[2]d'); $ledgerViews.%[1]s.editing_person = null;", ledger.Id, personId) }
+					>
+						Save
+					</button>
+					<button
+						class="btn btn-neutral"
+						data-on:click={ fmt.Sprintf("$ledgerViews.%[1]s.editing_person_id = -1; $ledgerViews.%[1]s.editing_person = null; @patch('/ledgers/%[1]s/view')", ledger.Id) }
+					>
+						Cancel
+					</button>
+				</div>
+				<button
+					class="btn bg-base-100 btn-square text-error"
+					data-on:click={ fmt.Sprintf("@get('/ledgers/%s/people/%d/confirm-delete')", ledger.Id, personId) }
+				>
+					@IconDelete()
+				</button>
+			</div>
+		</div>
+	}
+}
+
+func getPaybaqsOwed(ledger models.Ledger, personId int) []models.Paybaq {
+	paybaqs := make([]models.Paybaq, 0)
+	for _, paybaq := range ledger.Paybaqs {
+		if paybaq.From == personId {
+			paybaqs = append(paybaqs, paybaq)
+		}
+	}
+	return paybaqs
+}
+
+func getPaymentsPaidBy(ledger models.Ledger, personId int) []models.Payment {
+	payments := make([]models.Payment, 0)
+	for _, payment := range ledger.Payments {
+		if payment.PaidBy == personId {
+			payments = append(payments, payment)
+		}
+	}
+	return payments
+}
+
+func getPaymentsPaidFor(ledger models.Ledger, personId int) []models.Payment {
+	payments := make([]models.Payment, 0)
+	for _, payment := range ledger.Payments {
+		for _, paidFor := range payment.PaidFor {
+			if paidFor == personId {
+				payments = append(payments, payment)
+			}
+		}
+	}
+	return payments
+}
+
+func getPaymentMemberships(ledger models.Ledger, personId int) map[int]models.Payment {
+	paymentMemberships := make(map[int]models.Payment)
+	for _, payment := range ledger.Payments {
+		if payment.PaidBy == personId {
+			paymentMemberships[payment.Id] = payment
+		}
+		for _, paidFor := range payment.PaidFor {
+			if paidFor == personId {
+				paymentMemberships[payment.Id] = payment
+			}
+		}
+	}
+	return paymentMemberships
+}
+
+func deleteRequested(ledger models.Ledger, personId int) bool {
+	log.Printf("%+v", ledger.LedgerView.EditingPerson)
+	if ledger.LedgerView.EditingPerson == nil {
+		return false
+	}
+	return ledger.LedgerView.EditingPerson.DeleteRequested
 }

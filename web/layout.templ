@@ -1,29 +1,39 @@
 package web
 
 templ Layout(title string, contents templ.Component) {
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>{ title }</title>
-    <link rel="stylesheet" href="/static/styles.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.6/bundles/datastar.js"></script>
-  </head>
-  <body data-init="@get('/hotreload', {retryInterval: 100})" >
-    <header class="top-nav">
-      <nav>
-        <a href="/" class="logo">Paybaq</a>
-        <a href="/ledgers">Ledgers</a>
-        <a href="/about">About</a>
-      </nav>
-    </header>
-
-    <main id="main-content">
-      @contents
-    </main>
-    <footer>
-		<pre data-json-signals></pre>
-    </footer>
-  </body>
-</html>
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" href="/static/output.css"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link
+				href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&display=swap"
+				rel="stylesheet"
+			/>
+			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.6/bundles/datastar.js"></script>
+		</head>
+		<body class="font-sans bg-base-200 text-regular" data-theme="abyssal" data-init="@get('/hotreload', {retryInterval: 100})">
+			<header>
+				<nav class="navbar">
+					<div class="navbar-start">
+						<a class="link" href="/">Paybaq</a>
+						<a class="link" href="/ledgers">Ledgers</a>
+						<a class="link" href="/about">About</a>
+					</div>
+				</nav>
+			</header>
+			<main class="grid grid-rows-2 gap-4">
+				<div>
+					@contents
+				</div>
+				// <div class="overflow-x-auto max-w-full">
+				// 	<pre data-json-signals class="whitespace-pre-wrap break-all text-xs"></pre>
+				// </div>
+			</main>
+		</body>
+	</html>
 }

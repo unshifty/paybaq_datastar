@@ -3,13 +3,15 @@ package web
 import "unshift.local/paybaq/models"
 
 templ UserLedgers(userLedgers []models.Ledger) {
-	<div id="user-ledgers" class="user-ledgers" data-init="@get('/ledgers')">
-		if len(userLedgers) == 0 {
-			<p>No ledgers yet, create one above</p>
-		} else {
-			for _, ledger := range userLedgers {
-				@Ledger(ledger)
-			}
+
+<div id="user-ledgers" data-init="@get('/ledgers')">
+	if len(userLedgers) == 0 {
+		<p>No ledgers yet, create one above</p>
+	} else {
+		for _, ledger := range userLedgers {
+			@Ledger(ledger)
 		}
-	</div>
+	}
+</div>
+
 }

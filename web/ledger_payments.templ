@@ -1,59 +1,239 @@
 package web
 
 import "fmt"
+import "slices"
 import "unshift.local/paybaq/models"
+import "encoding/json"
 
 templ LedgerPayments(ledger models.Ledger) {
-	<section data-show={fmt.Sprintf("$ledgerViews.%s.tab == 'payments'", ledger.Id)} style="display: none">
-		if ledger.LedgerView.Mode == "add" {
-			<label>
-				<p>Description</p>
-				<input type="text" placeholder="Description">
-			</label>
-			<label>
-				<p>Amount</p>
-				<input type="number" placeholder="Amount">
-			</label>
-			<label>
-			<p>Paid By</p>
-				<select>
-					<option value="">Select a person</option>
-					for _, person := range ledger.People {
-						<option value={person.Id}>{person.Name}</option>
-					}
-				</select>
-			</label>
-			<div>
+	<section>
+		<div class="flex justify-center">
+			if ledger.LedgerView.EditingPaymentId == -1 {
+				<div class="pt-4 pb-3">
+					<input
+						type="checkbox"
+						aria-label="New Payment"
+						class="btn btn-neutral uppercase tracking-widest"
+						data-on:click={ fmt.Sprintf("$ledgerViews.%s.editing_payment_id = 0; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id) }
+					/>
+				</div>
+			} else if ledger.LedgerView.EditingPaymentId == 0 {
+				<div class="bg-base-100 border border-neutral p-4 m-1 rounded-sm w-full">
+					@PaymentForm(ledger, 0)
+				</div>
+			} else {
+				<div class="pt-4 pb-3">
+					<input
+						type="checkbox"
+						aria-label="New Payment"
+						class="btn btn-neutral uppercase tracking-widest"
+						disabled
+					/>
+				</div>
+			}
+		</div>
+		<div class="flex flex-col gap-1 p-1">
+			for _, payment := range ledger.PaymentsMostRecentFirst() {
+				@LedgerPayment(ledger, payment)
+			}
+		</div>
+	</section>
+}
+
+templ LedgerPayment(ledger models.Ledger, payment models.Payment) {
+	if ledger.LedgerView.EditingPaymentId == payment.Id {
+		<div class="bg-base-100 border border-neutral p-4 rounded-sm">
+			@PaymentForm(ledger, payment.Id)
+		</div>
+	} else {
+		<div
+			class={ "bg-base-100 border border-base-300 p-4 rounded-sm hover:border-neutral cursor-pointer", templ.KV("opacity-50", ledger.LedgerView.EditingPaymentId >= 0) }
+			data-on:click={ fmt.Sprintf("$ledgerViews.%s.editing_payment_id = %d; @patch('/ledgers/%s/view')", ledger.Id, payment.Id, ledger.Id) }
+		>
+			<div
+				class="grid grid-cols-3 gap-3"
+			>
+				<div
+					class="col-span-2 text-lg justify-self-start font-semibold uppercase tracking-widest"
+				>
+					{ payment.Description }
+				</div>
+				<div class="justify-self-end text-lg font-mono font-semibold">
+					<span>$</span>
+					<span>{ payment.Amount }</span>
+				</div>
+				<div class="col-span-full text-sm">
+					<span class="font-semibold tracking-wider">{ ledger.GetPersonById(payment.PaidBy).NameOrPlaceholder() }</span>
+					<span>paid for</span>
+					<span>{ models.NameList(ledger.GetPeopleByIds(payment.PaidFor), ", ") }</span>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ PaymentForm(ledger models.Ledger, paymentId int) {
+	{{
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		payment := getPayment(ledger, paymentId)
+		paymentJson, _ := json.Marshal(payment)
+		bindBase := "editing_payment"
+		if paymentId == 0 {
+			bindBase = "new_payment"
+		}
+	}}
+	<div
+		class="relative grid grid-cols-2 gap-4"
+		data-ignore-morph
+		data-signals__ifmissing={ fmt.Sprintf("{'ledgerViews': {'%s': {'editing_payment_id': %d, '%s': %s}}}", ledger.Id, paymentId, bindBase, paymentJson) }
+	>
+		if paymentId == 0 {
+			<input
+				type="checkbox"
+				aria-label="New Payment"
+				class="btn btn-active uppercase tracking-widest col-span-full justify-self-center"
+				data-on:click={ fmt.Sprintf("$ledgerViews.%s.editing_payment_id = -1; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id) }
+			/>
+		} else {
+			<h2 class="col-span-full justify-self-center tracking-widest">{ payment.Description }</h2>
+		}
+		<button
+			class="absolute right-0 btn btn-square bg-base-100 col-end-3"
+			data-on:click={ fmt.Sprintf("$ledgerViews.%s.%s = %s", ledger.Id, bindBase, paymentJson) }
+		>
+			@IconDelete()
+		</button>
+		<label class="floating-label col-span-full">
+			<span class="uppercase tracking-widest">Description</span>
+			<input
+				type="text"
+				class="input w-full"
+				id="description"
+				name="description"
+				placeholder="Payment description"
+				data-bind={ fmt.Sprintf("ledgerViews.%s.%s.description", ledger.Id, bindBase) }
+				value={ payment.Description }
+			/>
+		</label>
+		<label class="floating-label">
+			<span class="uppercase tracking-widest">Amount</span>
+			<input
+				type="number"
+				class="input"
+				id="amount"
+				name="amount"
+				placeholder="Amount"
+				data-bind={ fmt.Sprintf("ledgerViews.%s.%s.amount", ledger.Id, bindBase) }
+				value={ payment.Amount }
+			/>
+		</label>
+		<label class="floating-label">
+			<span class="uppercase tracking-widest">Paid By</span>
+			<select
+				class="select"
+				name="paid_by"
+				data-bind={ fmt.Sprintf("ledgerViews.%s.%s.paid_by", ledger.Id, bindBase) }
+				value={ payment.PaidBy }
+			>
+				<option value="-1">Select a person</option>
 				for _, person := range ledger.People {
-					<label>
-						<input type="checkbox" value={person.Id}>
-						<span>{person.Name}</span>
-					</label>
+					<option value={ person.Id }>{ person.Name }</option>
+				}
+			</select>
+		</label>
+		<fieldset class="col-span-full rounded-box bg-base-100 border border-(--content-light)">
+			<legend class="fieldset-legend font-normal flex gap-0 items-center mx-3  text-xs tracking-widest">
+				<span class="bg-base-100 uppercase leading-none px-0.75">Shared By</span>
+				<input id={ ledger.Id + "-everyone" } type="checkbox" class="checkbox checkbox-xs bg-base-100 ml-4"/>
+				<label for={ ledger.Id + "-everyone" } class="bg-base-100 leading-none px-1">Everyone</label>
+			</legend>
+			<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+				for _, person := range ledger.People {
+					<div class="flex items-center gap-0">
+						<input
+							type="checkbox"
+							class="checkbox checkbox-xs"
+							id={ person.Id }
+							name="paid_for"
+							value={ person.Id }
+							checked?={ slices.Contains(payment.PaidFor, person.Id) }
+							data-bind={ fmt.Sprintf("ledgerViews.%s.%s.paid_for", ledger.Id, bindBase) }
+						/>
+						<label for={ person.Id } class="pl-2 truncate">{ person.NameOrPlaceholder() }</label>
+					</div>
 				}
 			</div>
-			<div>
+		</fieldset>
+		<div class="flex gap-2 col-span-full">
+			if payment.Id > 0 {
 				<button
-					class="secondary"
+					class="btn btn-primary uppercase tracking-wide"
+					data-on:click={ fmt.Sprintf("@patch('/ledgers/%s/payments/%d')", ledger.Id, payment.Id) }
 				>
-					Add Payment
+					Save
 				</button>
 				<button
-					class="neutral"
-					data-on:click={fmt.Sprintf("$ledgerViews.%s.mode = 'list'; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id)}
+					class="btn btn-neutral"
+					data-on:click={ fmt.Sprintf("$ledgerViews.%[1]s.editing_payment_id = -1; $ledgerViews.%[1]s.editing_payment = null; @patch('/ledgers/%[1]s/view')", ledger.Id) }
 				>
 					Cancel
 				</button>
-			</div>
-		}
-		else {
-			<div class="add-payment">
-				<button 
-					class="secondary" 
-					data-on:click={fmt.Sprintf("$ledgerViews.%s.mode = 'add'; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id)}
+			} else {
+				<button
+					class="btn btn-primary uppercase tracking-wide"
+					data-on:click={ fmt.Sprintf("@post('/ledgers/%s/payments'); $ledgerViews.%s.new_payment = null", ledger.Id, ledger.Id) }
 				>
 					Add Payment
 				</button>
-			</div>	
+				<button
+					class="btn btn-neutral"
+					data-on:click={ fmt.Sprintf("$ledgerViews.%s.editing_payment_id = -1; @patch('/ledgers/%s/view')", ledger.Id, ledger.Id) }
+				>
+					Close
+				</button>
+			}
+		</div>
+	</div>
+}
+
+func getPayment(ledger models.Ledger, paymentId int) models.Payment {
+	for _, payment := range ledger.Payments {
+		if payment.Id == paymentId {
+			return payment
 		}
-	</section>
+	}
+	return newPayment(0)
+}
+
+func newPayment(id int) models.Payment {
+	return models.Payment{
+		Id:          0,
+		Description: "",
+		Amount:      0,
+		PaidBy:      -1,
+		PaidFor:     make([]int, 0),
+	}
+}
+
+func newPaymentJson() []byte {
+	json, _ := json.Marshal(newPayment(0))
+	return json
 }
